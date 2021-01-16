@@ -15,9 +15,9 @@ let storage = multer.diskStorage({
 let upload = multer({ storage });
 
 export default (req, res) => {
-  upload.array("iphoneAdPix", 3)(req, {}, (err) => {
-    // do error handling here
-    console.log(req.files); // do something with the files here
+  upload.array("img", 3)(req, {}, (err) => {
+    console.log("Error: ");
+    console.log(req.files);
   });
 
   res
@@ -27,8 +27,6 @@ export default (req, res) => {
 
 export const config = {
   api: {
-    bodyParser: {
-      sizeLimit: "20mb",
-    },
+    bodyParser: false,
   },
 };

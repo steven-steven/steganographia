@@ -28,6 +28,7 @@ uppy.use(XHRUpload, {
 uppy.on("complete", (result) => {
   const url = result.successful[0].uploadURL;
   console.log("successful upload", result);
+  console.log(url);
 });
 
 uppy.on("error", (error) => {
