@@ -1,3 +1,5 @@
+const multer = require('multer’)
+
 export default (req, res) => {
   switch (req.method) {
     case 'POST': {
@@ -5,5 +7,7 @@ export default (req, res) => {
       res.json({ message: 'post the data and return the encoded image' })
       break
     }
+
+
   }
 }
