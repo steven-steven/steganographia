@@ -11,8 +11,13 @@
   "dependencies": {
     "@tailwindcss/forms": "^0.2.1",
     "@tailwindcss/typography": "^0.2.0",
+    "@uppy/core": "^1.15.0",
+    "@uppy/dashboard": "^1.14.0",
+    "@uppy/react": "^1.11.0",
+    "@uppy/xhr-upload": "^1.6.8",
     "autoprefixer": "^10.0.2",
     "axios": "^0.21.1",
+    "multer": "^1.4.2",
     "next": "^10.0.2",
     "postcss": "^8.1.7",
     "react": "17.0.1",
