@@ -3,17 +3,19 @@ import axios from "axios";
 
 import Uppy from "@uppy/core";
 import { DragDrop } from "@uppy/react";
-import ThumbnailGenerator from "@uppy/thumbnail-generator";
 import XHRUpload from "@uppy/xhr-upload";
 
 /**
- * Credits go to https://maxcode.online/nextjs-file-upload-with-uppy-and-multer-using-api-routes/
+ * Credits: https://maxcode.online/nextjs-file-upload-with-uppy-and-multer-using-api-routes/
  */
 
+/**
+ * Configurations for file being uploaded and file upload operation
+ */
 const uppy = new Uppy({
   meta: { type: "img" },
   restrictions: {
-    maxFileSize: 1048576 * 20,
+    maxFileSize: 1048576 * 20, // 20 MB File upload Limit
     allowedFileTypes: [".jpg", ".jpeg", ".png"],
   },
   autoProceed: true,
@@ -25,12 +27,18 @@ uppy.use(XHRUpload, {
   formData: true,
 });
 
+/**
+ * Callback for upload success
+ */
 uppy.on("complete", (result) => {
   const url = result.successful[0].uploadURL;
   console.log("successful upload", result);
   console.log(url);
 });
 
+/**
+ * Callback for upload failed
+ */
 uppy.on("error", (error) => {
   console.error(error.stack);
 });
@@ -47,6 +55,9 @@ uppy.on("restriction-failed", (file, error) => {
   );
 });
 
+/**
+ * Old handle Click Function that contains alal the user data we want to submit
+ */
 const handleClick = async () => {
   const res = await axios.post("http://localhost:3000/api/encodeImage", {
     name: "user",
@@ -73,7 +84,6 @@ const UploadComponent = () => {
           },
         }}
       />
-      <button onClick={handleClick}> Send API </button>
     </div>
   );
 };

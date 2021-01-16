@@ -32,3 +32,6 @@ yarn-error.log*
 
 # vercel
 .vercel
+
+# static/image assets
+/public/uploads/*
