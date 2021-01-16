@@ -4,6 +4,8 @@ const gmUtil = require("../../imageUtil/gmUtil");
 export default (req, res) => {
     switch (req.method) {
         case 'POST': {
+            // Test image crop and merging 
+
             //console.log(req);
             const uuid = nanoid(7);
 

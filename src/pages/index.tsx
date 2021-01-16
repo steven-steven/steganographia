@@ -1,7 +1,7 @@
 import React from "react";
 import Head from "next/head";
 import Link from "next/link";
-import UploadComponent from '../component/uploadComponent'
+import UploadComponent from "../component/uploadComponent";
 
 export default function Home() {
   return (
@@ -20,7 +20,14 @@ export default function Home() {
           <h1 className="px-5 text-4xl font-bold leading-tight tracking-tight text-center sm:mt-4 sm:text-6xl">
             Steganographia
           </h1>
-          <UploadComponent />
+
+          <form
+            action="/incidents/upload"
+            method="post"
+            encType="multipart/form-data"
+          >
+            <UploadComponent />
+          </form>
         </div>
       </main>
     </div>
