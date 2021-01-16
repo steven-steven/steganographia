@@ -1,9 +1,14 @@
-import React from "react";
+import React, { useState } from "react";
 import Head from "next/head";
-import Link from "next/link";
 import UploadComponent from "../component/uploadComponent";
 
 export default function Home() {
+  const [formData, setFormData] = useState({ name: "", uploadedImage: "" });
+
+  const handleUpload = (file) => {
+    setFormData({ ...formData, uploadedImage: file });
+  };
+
   return (
     <div>
       <Head>
@@ -21,12 +26,11 @@ export default function Home() {
             Steganographia
           </h1>
 
-          <form
-            action="/incidents/upload"
-            method="post"
-            encType="multipart/form-data"
-          >
-            <UploadComponent />
+          <form method="POST" encType="multipart/form-data">
+            <UploadComponent
+              handleUpload={(e) => handleUpload(e.target.files[0])}
+              fileData={formData.uploadedImage}
+            />
           </form>
         </div>
       </main>
