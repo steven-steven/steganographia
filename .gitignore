@@ -35,3 +35,9 @@ yarn-error.log*
 
 # static/image assets
 /public/uploads/*
+
+public/model/out/
+
+public/temp/
+
+public/saved_models
