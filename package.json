@@ -17,6 +17,7 @@
         "@uppy/xhr-upload": "^1.6.8",
         "autoprefixer": "^10.0.2",
         "axios": "^0.21.1",
+        "dateformat": "^4.4.1",
         "file-saver": "^2.0.5",
         "formidable": "^1.2.2",
         "formidable-serverless": "^1.1.1",

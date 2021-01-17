@@ -3,6 +3,7 @@ import fs from "fs";
 import { exec } from 'child_process';
 import util from "util";
 import path from 'path';
+const { selectAll, selectOne, insert, shutdown } = require("../../handler/dbHandler");
 const gmUtil = require("../../imageUtil/gmUtil");
 
 // allow async await
@@ -15,9 +16,13 @@ export const config = {
 };
 
 type data = {
-  id: string;
+  name: string,
+  message: string,
+  date: string
 }
-
+type error = {
+  error: string
+}
 export default async (req, res) => {
   switch (req.method) {
     case 'POST': {
@@ -29,7 +34,7 @@ export default async (req, res) => {
 
       // parse image, store in /temp, then call python model
       // run the model on the input image, and get generated file
-      const userData: data = await new Promise(function (resolve, reject) {
+      const userData: data | error = await new Promise(function (resolve, reject) {
         form.parse(req, async (err, fields, { file }) => {
 
           if (err) {
@@ -56,12 +61,15 @@ export default async (req, res) => {
           const id: string = outputs[outputs.length - 1];
 
           // search db to get data
+          const rows = await selectOne(id);
+          if (!rows.length) resolve({ error: 'verification failed' })
+          const userData: data = rows[0];
 
           if (stderr) {
             console.log(`stderr: ${stderr}`);
           }
           console.log(`stdout: ${stdout}`);
-          resolve({ id: id });
+          resolve(userData);
         });
       });
       res.json(userData)

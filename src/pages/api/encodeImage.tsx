@@ -4,11 +4,15 @@ import { exec } from 'child_process';
 import util from "util";
 import path from 'path';
 import mime from 'mime';
-import { nanoid } from 'nanoid';
+import { customAlphabet } from 'nanoid';
+import dateformat from 'dateformat';
+const { selectAll, selectOne, insert, shutdown } = require("../../handler/dbHandler");
 const gmUtil = require("../../imageUtil/gmUtil");
 
 // allow async await
 const promiseExec = util.promisify(exec);
+
+const nanoid = customAlphabet('1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz', 7)
 
 export const config = {
   api: {
@@ -17,7 +21,7 @@ export const config = {
 };
 
 type data = {
-  id: string;
+  message: string;
   name: string;
 }
 
@@ -25,7 +29,7 @@ export default async (req, res) => {
   switch (req.method) {
     case 'POST': {
       // generate uuid
-      const uuid = nanoid(7);
+      const uuid = nanoid();
 
       const form = new Formidable.IncomingForm({ keepExtensions: true });
       const publicFolderPath = path.join(process.cwd(), 'public');
@@ -35,7 +39,7 @@ export default async (req, res) => {
       // run the model on the input image, and get generated file
       const encodedFilePath: string = await new Promise(function (resolve, reject) {
         form.parse(req, async (err, fields, { file }) => {
-          const { id, name }: data = JSON.parse(fields.stampData);
+          const { message, name }: data = JSON.parse(fields.stampData);
 
           if (err) {
             reject(err);
@@ -54,11 +58,14 @@ export default async (req, res) => {
 
           // execute command line (run model)
           const encodedFilePath = `${tempFolderPath}/out/cropped_${file.name.split('.')[0]}_hidden.png`;
-          const { stdout, stderr } = await promiseExec(`python '${publicFolderPath}/encode_image.py' '${modelFolderPath}' --image '${croppedFilePath}' --save_dir '${tempFolderPath}/out/' --secret He1234`);
+          const { stdout, stderr } = await promiseExec(`python '${publicFolderPath}/encode_image.py' '${modelFolderPath}' --image '${croppedFilePath}' --save_dir '${tempFolderPath}/out/' --secret ${uuid}`);
 
           // encoded cropped image -> original
           const newFilePath = `${tempFolderPath}/new_${file.name}`;
           await mergeImage(cropCoordinate, encodedFilePath, originalFilePath, newFilePath);
+
+          // insert to db
+          const res = await insert(uuid, name, message, dateformat(new Date(), "yyyy-mm-dd"));
 
           if (stderr) {
             console.log(`stderr: ${stderr}`);
