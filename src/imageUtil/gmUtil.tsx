@@ -1,4 +1,5 @@
 const gm = require('gm');
+import fs from 'fs';
 
 module.exports = {
   crop: (srcImgPath: string, cropImgPath: string,) => {
@@ -12,8 +13,8 @@ module.exports = {
 
           const CROP_WIDTH = 400;
           const CROP_HEIGHT = 400;
-          const cropX = getRandomInt(value.width - CROP_WIDTH);
-          const cropY = getRandomInt(value.height - CROP_HEIGHT);
+          const cropX = 0; //getRandomInt(value.width - CROP_WIDTH);
+          const cropY = 0; //getRandomInt(value.height - CROP_HEIGHT);
 
           gm(srcImgPath)
             .crop(CROP_WIDTH, CROP_HEIGHT, cropX, cropY)

@@ -1,4 +1,3 @@
-import { File } from "formidable";
 import Formidable from "formidable-serverless";
 import fs from "fs";
 import { exec } from 'child_process';
@@ -17,6 +16,11 @@ export const config = {
   },
 };
 
+type data = {
+  id: string;
+  name: string;
+}
+
 export default async (req, res) => {
   switch (req.method) {
     case 'POST': {
@@ -31,7 +35,7 @@ export default async (req, res) => {
       // run the model on the input image, and get generated file
       const encodedFilePath: string = await new Promise(function (resolve, reject) {
         form.parse(req, async (err, fields, { file }) => {
-          const { id, name } = JSON.parse(fields.stampData);
+          const { id, name }: data = JSON.parse(fields.stampData);
 
           if (err) {
             reject(err);

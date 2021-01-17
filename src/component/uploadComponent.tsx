@@ -28,11 +28,25 @@ const UploadComponent = () => {
     FileSaver.saveAs(blob, selectedFile.name);
   }
 
+  const verifyClick = async () => {
+    const body = new FormData();
+
+    body.append('file', selectedFile, selectedFile.name);
+
+    const res = await fetch("http://localhost:3000/api/verify", {
+      method: "POST",
+      body
+    });
+    //display result
+    console.log(res);
+  }
+
   return (
     <div>
       Upload Image
       <input type="file" onChange={onFileChange} />
       <button type="button" onClick={handleClick}>Submit</button>
+      <button type="button" onClick={verifyClick}>Verify</button>
     </div>
   );
 }
