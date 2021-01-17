@@ -20,29 +20,26 @@ let upload = multer({ storage });
 
 export default async (req, res) => {
   if (req.method === "POST") {
-    let encode_image;
-    upload.single("img")(req, {}, (err) => {
+    upload.single("myImage")(req, {}, (err) => {
       if (err) {
-        res.status(409).end({ message: "error: image file upload failed." });
+        return res
+          .status(409)
+          .end({ message: "error: image file upload failed." });
       }
+
       // Source: https://code.tutsplus.com/tutorials/file-upload-with-multer-in-node--cms-32088
-      // I believe this reads the uploaded image from local disk
+      // I believe this reads the image from local file system
+      let img = fs.readFileSync(req.file.path);
+      let encode_image = img.toString("base64");
 
-      console.log("req");
-      console.log(req.files);
-      console.log(req.file);
-      console.log(req.uploadedImage);
+      // Convert the file to byte-string, which can be manipulated and stored in a DB
+      let finalImg = {
+        contentType: req.file.mimetype,
+        image: new Buffer(encode_image, "base64"),
+      };
+      console.log(finalImg);
       console.log(req.body);
-      // let img = fs.readFileSync(req.file.path);
-      // encode_image = img.toString("base64");
     });
-
-    if (encode_image) {
-      console.log("req.body");
-      console.log(req.body);
-    } else {
-      console.log("Error");
-    }
 
     res.status(200).send({ message: "success: form submitted" });
   } else {

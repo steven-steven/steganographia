@@ -1,10 +1,6 @@
 import React from "react";
 import axios from "axios";
-
-import Uppy from "@uppy/core";
-import { DragDrop } from "@uppy/react";
-import ThumbnailGenerator from "@uppy/thumbnail-generator";
-import XHRUpload from "@uppy/xhr-upload";
+import _ from "lodash";
 
 /**
  * Credits go to https://maxcode.online/nextjs-file-upload-with-uppy-and-multer-using-api-routes/
@@ -12,14 +8,12 @@ import XHRUpload from "@uppy/xhr-upload";
 const UploadComponent = ({ handleUpload, fileData }) => {
   const handleFileSubmit = (e) => {
     e.preventDefault();
+
     let formData = new FormData();
 
-    console.log("Form Data");
-    console.log(fileData);
-
+    formData.append("myImage", fileData);
     formData.append("name", "Steven Xiong");
     formData.append("email", "steven.x@waterloop.ca");
-    formData.append("uploadedImage", fileData);
 
     axios({
       method: "post",
@@ -36,14 +30,23 @@ const UploadComponent = ({ handleUpload, fileData }) => {
   };
 
   return (
-    <div>
-      <input
-        type="file"
-        name="myImage"
-        accept="image/*"
-        onChange={handleUpload}
-      />
-      <input type="submit" value="Upload Photo" onClick={handleFileSubmit} />
+    <div className="mt-6 flex justify-between">
+      <div>
+        <input
+          type="file"
+          name="myImage"
+          accept="image/*"
+          onChange={handleUpload}
+        />
+      </div>
+      <div>
+        <input
+          type="submit"
+          value="Submit"
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          onClick={handleFileSubmit}
+        />
+      </div>
     </div>
   );
 };
