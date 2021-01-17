@@ -1,18 +1,7 @@
 const pg = require('pg');
 const CONFIG = require('../config/dbConfig.tsx');
-// Create a pool.
-const pool = new pg.Pool(CONFIG);
 
-new Promise((resolve, reject) => {
-    pool.query(`DELETE FROM my_table WHERE uid=123;`)
-        .then(res => resolve(res))
-        .catch(err =>
-            reject(err)
-        );
-}).then((res) => {
-    console.log(res);
-})
-pool.end();
+const pool = new pg.Pool(CONFIG);
 
 module.exports = {
     selectAll: () => {
