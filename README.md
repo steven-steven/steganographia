@@ -29,6 +29,11 @@ rm detector_models.tar.xz
 
 4. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+5. Cockroachdb setup
+- Create ```certs``` folder under ```src```, put ```doot-hack-ca.crt``` under this folder.
+- Create ```config``` folder under ```src```, put ```dbConfig.tsx``` under this folder.
+- Make sure your local/server IP is registered under Networking, Authorized Networks.
+ 
 ## Recommended extensions for VSCode
 
 If you're a beginner and don't know which extensions you need, definitely install these:
