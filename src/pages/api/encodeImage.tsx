@@ -1,16 +1,27 @@
-import { File } from "formidable";
 import Formidable from "formidable-serverless";
 import fs from "fs";
 import { exec } from "child_process";
 import util from "util";
 import path from "path";
 import mime from "mime";
-import { nanoid } from "nanoid";
+import { customAlphabet } from "nanoid";
+import dateformat from "dateformat";
 
-const multer = require("multer");
+const {
+  selectAll,
+  selectOne,
+  insert,
+  shutdown,
+} = require("../../handler/dbHandler");
 const gmUtil = require("../../imageUtil/gmUtil");
+
 // allow async await
 const promiseExec = util.promisify(exec);
+
+const nanoid = customAlphabet(
+  "1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
+  7
+);
 
 export const config = {
   api: {
@@ -18,25 +29,18 @@ export const config = {
   },
 };
 
-/**
- * Configuration for storing image on local disk
- */
-let storage = multer.diskStorage({
-  destination(req, file, cb) {
-    cb(null, "./public/uploads");
-  },
-  filename(req, file, cb) {
-    cb(null, file.originalname);
-  },
-});
-
-let upload = multer({ storage });
+type data = {
+  message: string;
+  name: string;
+};
 
 export default async (req, res) => {
   switch (req.method) {
     case "POST": {
       // generate uuid
-      const uuid = nanoid(7);
+      const uuid = nanoid();
+
+      const form = new Formidable.IncomingForm({ keepExtensions: true });
       const publicFolderPath = path.join(process.cwd(), "public");
       const modelFolderPath = path.join(
         publicFolderPath,
@@ -44,52 +48,66 @@ export default async (req, res) => {
       );
       const tempFolderPath = path.join(publicFolderPath, "temp");
 
-      upload.single("myImage")(req, {}, (err) => {
-        if (err) {
-          return res
-            .status(409)
-            .end({ message: "error: image file upload failed." });
-        }
+      // run the model on the input image, and get generated file
+      const encodedFilePath: string = await new Promise(function (
+        resolve,
+        reject
+      ) {
+        form.parse(req, async (err, fields, { file }) => {
+          const { message, name }: data = JSON.parse(fields.stampData);
 
-        // Source: https://code.tutsplus.com/tutorials/file-upload-with-multer-in-node--cms-32088
-        // I believe this reads the image from local file system
-        const { file } = req;
-        // write the file locally
-        const data = fs.readFileSync(file.path);
-        const originalFilePath = `${tempFolderPath}/${file.name}`;
-        fs.writeFileSync(originalFilePath, data);
-        fs.unlinkSync(file.path);
+          if (err) {
+            reject(err);
+            return;
+          }
 
-        console.log("req.body");
-        console.log(req.body);
-        console.log("file");
-        console.log(file);
+          // write the file locally
+          const data = fs.readFileSync(file.path);
+          const originalFilePath = `${tempFolderPath}/${file.name}`;
+          fs.writeFileSync(originalFilePath, data);
+          fs.unlinkSync(file.path);
 
-        // original -> cropped image
-        const croppedFilePath = `${tempFolderPath}/cropped_${file.name}`;
-        const { cropCoordinate } = await cropImage(
-          originalFilePath,
-          croppedFilePath
-        );
+          // original -> cropped image
+          const croppedFilePath = `${tempFolderPath}/cropped_${file.name}`;
+          const { cropCoordinate } = await cropImage(
+            originalFilePath,
+            croppedFilePath
+          );
 
-        // execute command line (run model)
-        const encodedFilePath = `${tempFolderPath}/out/cropped_${
-          file.name.split(".")[0]
-        }_hidden.png`;
-        const { stdout, stderr } = await promiseExec(
-          `python ${publicFolderPath}/encode_image.py ${modelFolderPath} --image ${croppedFilePath} --save_dir ${tempFolderPath}/out/ --secret He1234`
-        );
+          // execute command line (run model)
+          const encodedFilePath = `${tempFolderPath}/out/cropped_${
+            file.name.split(".")[0]
+          }_hidden.png`;
+          const { stdout, stderr } = await promiseExec(
+            `python '${publicFolderPath}/encode_image.py' '${modelFolderPath}' --image '${croppedFilePath}' --save_dir '${tempFolderPath}/out/' --secret ${uuid}`
+          );
 
-        // encoded cropped image -> original
-        await mergeImage(cropCoordinate, encodedFilePath, originalFilePath);
+          // encoded cropped image -> original
+          const newFilePath = `${tempFolderPath}/new_${file.name}`;
+          await mergeImage(
+            cropCoordinate,
+            encodedFilePath,
+            originalFilePath,
+            newFilePath
+          );
 
-        if (stderr) {
-          console.log(`stderr: ${stderr}`);
-        }
-        // console.log(`stdout: ${stdout}`);
+          // insert to db
+          const res = await insert(
+            uuid,
+            name,
+            message,
+            dateformat(new Date(), "yyyy-mm-dd")
+          );
 
-        resolve(originalFilePath);
+          if (stderr) {
+            console.log(`stderr: ${stderr}`);
+          }
+          // console.log(`stdout: ${stdout}`);
+          resolve(newFilePath);
+        });
       });
+
+      console.log(encodedFilePath);
 
       const filename = path.basename(encodedFilePath);
       const mimetype = mime.getType(encodedFilePath);
@@ -108,12 +126,12 @@ const cropImage = async (inPath, outPath) => {
 };
 
 // cropImage to original
-const mergeImage = async (cropCoordinate, inPath, outPath) => {
+const mergeImage = async (cropCoordinate, toPastePath, inPath, outPath) => {
   await gmUtil.merge(
     cropCoordinate.cropX,
     cropCoordinate.cropY,
-    outPath,
     inPath,
+    toPastePath,
     outPath
   );
 };
