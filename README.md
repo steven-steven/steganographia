@@ -40,10 +40,10 @@ pip install tensorflow=1.13.1
 ## Demo
  
 Encoding data to an image:
-<div style="text-align:center">
-<img src="/verificationDemo.gif" width="300" />
-</div>
+
+<img src="/encodingDemo.gif" width="300" />
 
 Retrieving watermark data from the image:
 
-<img src="/encodingDemo.gif" width="300" />
+<img src="/verificationDemo.gif" width="300" />
+
