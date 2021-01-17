@@ -4,7 +4,7 @@ an invisible digital watermark using Stegastamp
 
 ## How to use
 
-2. Install dependencies and run dev server:
+1. Install dependencies and run dev server:
 
 ```bash
 yarn install
@@ -13,7 +13,21 @@ yarn install
 yarn dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Download the pretrained model from Stegastamp
+```
+# encoder model
+wget http://people.eecs.berkeley.edu/~tancik/stegastamp/saved_models.tar.xz
+tar -xJf saved_models.tar.xz
+rm saved_models.tar.xz
+# decoder model
+wget http://people.eecs.berkeley.edu/~tancik/stegastamp/detector_models.tar.xz
+tar -xJf detector_models.tar.xz
+rm detector_models.tar.xz
+```
+
+3. Move `saved_models' and 'detector_models' folder into the public folder
+
+4. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
 ## Recommended extensions for VSCode
 
