@@ -1,4 +1,3 @@
-import { File } from "formidable";
 import Formidable from "formidable-serverless";
 import fs from "fs";
 import { exec } from 'child_process';
@@ -17,12 +16,14 @@ export const config = {
   },
 };
 
+type data = {
+  id: string;
+  name: string;
+}
+
 export default async (req, res) => {
   switch (req.method) {
     case 'POST': {
-      // await testTransform();
-      // res.json({ message: 'post the data and return the encoded image' })
-      // break
       // generate uuid
       const uuid = nanoid(7);
 
@@ -34,6 +35,8 @@ export default async (req, res) => {
       // run the model on the input image, and get generated file
       const encodedFilePath: string = await new Promise(function (resolve, reject) {
         form.parse(req, async (err, fields, { file }) => {
+          const { id, name }: data = JSON.parse(fields.stampData);
+
           if (err) {
             reject(err);
             return;
@@ -51,18 +54,21 @@ export default async (req, res) => {
 
           // execute command line (run model)
           const encodedFilePath = `${tempFolderPath}/out/cropped_${file.name.split('.')[0]}_hidden.png`;
-          const { stdout, stderr } = await promiseExec(`python ${publicFolderPath}/encode_image.py ${modelFolderPath} --image ${croppedFilePath} --save_dir ${tempFolderPath}/out/ --secret He1234`);
+          const { stdout, stderr } = await promiseExec(`python '${publicFolderPath}/encode_image.py' '${modelFolderPath}' --image '${croppedFilePath}' --save_dir '${tempFolderPath}/out/' --secret He1234`);
 
           // encoded cropped image -> original
-          await mergeImage(cropCoordinate, encodedFilePath, originalFilePath);
+          const newFilePath = `${tempFolderPath}/new_${file.name}`;
+          await mergeImage(cropCoordinate, encodedFilePath, originalFilePath, newFilePath);
 
           if (stderr) {
             console.log(`stderr: ${stderr}`);
           }
           // console.log(`stdout: ${stdout}`);
-          resolve(originalFilePath);
+          resolve(newFilePath);
         });
       });
+
+      console.log(encodedFilePath);
 
       const filename = path.basename(encodedFilePath);
       const mimetype = mime.getType(encodedFilePath);
@@ -81,6 +87,6 @@ const cropImage = async (inPath, outPath) => {
 }
 
 // cropImage to original
-const mergeImage = async (cropCoordinate, inPath, outPath) => {
-  await gmUtil.merge(cropCoordinate.cropX, cropCoordinate.cropY, outPath, inPath, outPath);
+const mergeImage = async (cropCoordinate, toPastePath, inPath, outPath) => {
+  await gmUtil.merge(cropCoordinate.cropX, cropCoordinate.cropY, inPath, toPastePath, outPath);
 }
