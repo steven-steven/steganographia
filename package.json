@@ -18,6 +18,7 @@
         "autoprefixer": "^10.0.2",
         "axios": "^0.21.1",
         "fs": "0.0.1-security",
+        "dateformat": "^4.4.1",
         "file-saver": "^2.0.5",
         "formidable": "^1.2.2",
         "formidable-serverless": "^1.1.1",

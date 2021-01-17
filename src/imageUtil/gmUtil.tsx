@@ -1,4 +1,5 @@
 const gm = require('gm');
+import fs from 'fs';
 
 module.exports = {
     crop: (srcImgPath: string, cropImgPath: string,) => {
@@ -12,8 +13,8 @@ module.exports = {
 
                     const CROP_WIDTH = 400;
                     const CROP_HEIGHT = 400;
-                    const cropX = getRandomInt(value.width - CROP_WIDTH);
-                    const cropY = getRandomInt(value.height - CROP_HEIGHT);
+                    const cropX = 0; //getRandomInt(value.width - CROP_WIDTH);
+                    const cropY = 0; //getRandomInt(value.height - CROP_HEIGHT);
 
                     gm(srcImgPath)
                         .crop(CROP_WIDTH, CROP_HEIGHT, cropX, cropY)
@@ -29,14 +30,23 @@ module.exports = {
     },
 
     merge: (cropX: number, cropY: number, srcImgPath: string, cropImgPath: string, mergeImgPath: string) => {
-        gm()
-            .in(srcImgPath)
-            .in('-page', `+${cropX}+${cropY}`)
-            .in(cropImgPath)
-            .flatten()
-            .write(mergeImgPath, (error) => {
-                if (error) console.log(error);
-            });
+        return new Promise<void>((resolve, reject) => {
+            gm()
+                .in(srcImgPath)
+                // move the crop process image at cropX and cropY. (0 and 0 by default)
+                .in('-page', `+${cropX}+${cropY}`)
+                // crop to remove slight boarder of the crop process image (<width>x<height>{+-}<x>{+-}<y>)
+                .in('-crop', `395x395+0+0`)
+                .in(cropImgPath)
+                .flatten()
+                .write(mergeImgPath, (error) => {
+                    if (error) {
+                        reject(error);
+                    } else {
+                        resolve();
+                    }
+                });
+        });
     }
 }
 

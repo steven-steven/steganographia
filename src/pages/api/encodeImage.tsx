@@ -2,26 +2,17 @@ import Formidable from "formidable-serverless";
 import fs from "fs";
 import { exec } from "child_process";
 import util from "util";
-import path from "path";
-import mime from "mime";
-import { customAlphabet } from "nanoid";
-import dateformat from "dateformat";
-
-const {
-  selectAll,
-  selectOne,
-  insert,
-  shutdown,
-} = require("../../handler/dbHandler");
+import path from 'path';
+import mime from 'mime';
+import { customAlphabet } from 'nanoid';
+import dateformat from 'dateformat';
+const { selectAll, selectOne, insert, shutdown } = require("../../handler/dbHandler");
 const gmUtil = require("../../imageUtil/gmUtil");
 
 // allow async await
 const promiseExec = util.promisify(exec);
 
-const nanoid = customAlphabet(
-  "1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
-  7
-);
+const nanoid = customAlphabet('1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz', 7)
 
 export const config = {
   api: {
@@ -32,11 +23,11 @@ export const config = {
 type data = {
   message: string;
   name: string;
-};
+}
 
 export default async (req, res) => {
   switch (req.method) {
-    case "POST": {
+    case 'POST': {
       // generate uuid
       const uuid = nanoid();
 
@@ -75,29 +66,15 @@ export default async (req, res) => {
           );
 
           // execute command line (run model)
-          const encodedFilePath = `${tempFolderPath}/out/cropped_${
-            file.name.split(".")[0]
-          }_hidden.png`;
-          const { stdout, stderr } = await promiseExec(
-            `python '${publicFolderPath}/encode_image.py' '${modelFolderPath}' --image '${croppedFilePath}' --save_dir '${tempFolderPath}/out/' --secret ${uuid}`
-          );
+          const encodedFilePath = `${tempFolderPath}/out/cropped_${file.name.split('.')[0]}_hidden.png`;
+          const { stdout, stderr } = await promiseExec(`python '${publicFolderPath}/encode_image.py' '${modelFolderPath}' --image '${croppedFilePath}' --save_dir '${tempFolderPath}/out/' --secret ${uuid}`);
 
           // encoded cropped image -> original
           const newFilePath = `${tempFolderPath}/new_${file.name}`;
-          await mergeImage(
-            cropCoordinate,
-            encodedFilePath,
-            originalFilePath,
-            newFilePath
-          );
+          await mergeImage(cropCoordinate, encodedFilePath, originalFilePath, newFilePath);
 
           // insert to db
-          const res = await insert(
-            uuid,
-            name,
-            message,
-            dateformat(new Date(), "yyyy-mm-dd")
-          );
+          const res = await insert(uuid, name, message, dateformat(new Date(), "yyyy-mm-dd"));
 
           if (stderr) {
             console.log(`stderr: ${stderr}`);
@@ -127,11 +104,5 @@ const cropImage = async (inPath, outPath) => {
 
 // cropImage to original
 const mergeImage = async (cropCoordinate, toPastePath, inPath, outPath) => {
-  await gmUtil.merge(
-    cropCoordinate.cropX,
-    cropCoordinate.cropY,
-    inPath,
-    toPastePath,
-    outPath
-  );
-};
+  await gmUtil.merge(cropCoordinate.cropX, cropCoordinate.cropY, inPath, toPastePath, outPath);
+}
