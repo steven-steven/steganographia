@@ -51,10 +51,7 @@ import mime from "mime";
 import { nanoid } from "nanoid";
 
 const multer = require("multer");
-const fs = require("fs");
-
 const gmUtil = require("../../imageUtil/gmUtil");
-
 // allow async await
 const promiseExec = util.promisify(exec);
 
@@ -67,15 +64,8 @@ export const config = {
 export default async (req, res) => {
   switch (req.method) {
     case "POST": {
-      // await testTransform();
-      // res.json({ message: 'post the data and return the encoded image' })
-      // break
       // generate uuid
       const uuid = nanoid(7);
-
-      const form = new Formidable.IncomingForm({ keepExtensions: true });
-      console.log("Form");
-      console.log(form);
       const publicFolderPath = path.join(process.cwd(), "public");
       const modelFolderPath = path.join(
         publicFolderPath,
@@ -83,47 +73,51 @@ export default async (req, res) => {
       );
       const tempFolderPath = path.join(publicFolderPath, "temp");
 
-      // run the model on the input image, and get generated file
-      const encodedFilePath: string = await new Promise(function (
-        resolve,
-        reject
-      ) {
-        form.parse(req, async (err, fields, { file }) => {
-          if (err) {
-            reject(err);
-            return;
-          }
+      upload.single("myImage")(req, {}, (err) => {
+        if (err) {
+          return res
+            .status(409)
+            .end({ message: "error: image file upload failed." });
+        }
 
-          // write the file locally
-          const data = fs.readFileSync(file.path);
-          const originalFilePath = `${tempFolderPath}/${file.name}`;
-          fs.writeFileSync(originalFilePath, data);
-          fs.unlinkSync(file.path);
+        // Source: https://code.tutsplus.com/tutorials/file-upload-with-multer-in-node--cms-32088
+        // I believe this reads the image from local file system
+        const { file } = req;
+        // write the file locally
+        const data = fs.readFileSync(file.path);
+        const originalFilePath = `${tempFolderPath}/${file.name}`;
+        fs.writeFileSync(originalFilePath, data);
+        fs.unlinkSync(file.path);
 
-          // original -> cropped image
-          const croppedFilePath = `${tempFolderPath}/cropped_${file.name}`;
-          const { cropCoordinate } = await cropImage(
-            originalFilePath,
-            croppedFilePath
-          );
+        console.log("req.body");
+        console.log(req.body);
+        console.log("file");
+        console.log(file);
 
-          // execute command line (run model)
-          const encodedFilePath = `${tempFolderPath}/out/cropped_${
-            file.name.split(".")[0]
-          }_hidden.png`;
-          const { stdout, stderr } = await promiseExec(
-            `python ${publicFolderPath}/encode_image.py ${modelFolderPath} --image ${croppedFilePath} --save_dir ${tempFolderPath}/out/ --secret He1234`
-          );
+        // original -> cropped image
+        const croppedFilePath = `${tempFolderPath}/cropped_${file.name}`;
+        const { cropCoordinate } = await cropImage(
+          originalFilePath,
+          croppedFilePath
+        );
 
-          // encoded cropped image -> original
-          await mergeImage(cropCoordinate, encodedFilePath, originalFilePath);
+        // execute command line (run model)
+        const encodedFilePath = `${tempFolderPath}/out/cropped_${
+          file.name.split(".")[0]
+        }_hidden.png`;
+        const { stdout, stderr } = await promiseExec(
+          `python ${publicFolderPath}/encode_image.py ${modelFolderPath} --image ${croppedFilePath} --save_dir ${tempFolderPath}/out/ --secret He1234`
+        );
 
-          if (stderr) {
-            console.log(`stderr: ${stderr}`);
-          }
-          // console.log(`stdout: ${stdout}`);
-          resolve(originalFilePath);
-        });
+        // encoded cropped image -> original
+        await mergeImage(cropCoordinate, encodedFilePath, originalFilePath);
+
+        if (stderr) {
+          console.log(`stderr: ${stderr}`);
+        }
+        // console.log(`stdout: ${stdout}`);
+
+        resolve(originalFilePath);
       });
 
       const filename = path.basename(encodedFilePath);
