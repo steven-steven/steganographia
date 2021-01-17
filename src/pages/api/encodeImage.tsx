@@ -20,9 +20,6 @@ export const config = {
 export default async (req, res) => {
   switch (req.method) {
     case 'POST': {
-      // await testTransform();
-      // res.json({ message: 'post the data and return the encoded image' })
-      // break
       // generate uuid
       const uuid = nanoid(7);
 
@@ -34,6 +31,10 @@ export default async (req, res) => {
       // run the model on the input image, and get generated file
       const encodedFilePath: string = await new Promise(function (resolve, reject) {
         form.parse(req, async (err, fields, { file }) => {
+          const { id, name } = JSON.parse(fields.stampData);
+
+          const escapedFileName = file.path;
+
           if (err) {
             reject(err);
             return;
@@ -41,26 +42,28 @@ export default async (req, res) => {
 
           // write the file locally
           const data = fs.readFileSync(file.path);
-          const originalFilePath = `${tempFolderPath}/${file.name}`;
+          const originalFilePath = `${tempFolderPath}/${escapedFileName}`;
           fs.writeFileSync(originalFilePath, data);
           fs.unlinkSync(file.path);
 
           // original -> cropped image
-          const croppedFilePath = `${tempFolderPath}/cropped_${file.name}`;
+          const croppedFilePath = `${tempFolderPath}/cropped_${escapedFileName}`;
           const { cropCoordinate } = await cropImage(originalFilePath, croppedFilePath);
 
           // execute command line (run model)
-          const encodedFilePath = `${tempFolderPath}/out/cropped_${file.name.split('.')[0]}_hidden.png`;
+          const encodedFilePath = `${tempFolderPath}/out/cropped_${escapedFileName.split('.')[0]}_hidden.png`;
           const { stdout, stderr } = await promiseExec(`python ${publicFolderPath}/encode_image.py ${modelFolderPath} --image ${croppedFilePath} --save_dir ${tempFolderPath}/out/ --secret He1234`);
 
           // encoded cropped image -> original
-          await mergeImage(cropCoordinate, encodedFilePath, originalFilePath);
+          const newFilePath = `${tempFolderPath}/new_${escapedFileName}`;
+          await mergeImage(cropCoordinate, originalFilePath, encodedFilePath, newFilePath);
 
+          console.log('done merge');
           if (stderr) {
             console.log(`stderr: ${stderr}`);
           }
           // console.log(`stdout: ${stdout}`);
-          resolve(originalFilePath);
+          resolve(newFilePath);
         });
       });
 
@@ -74,6 +77,10 @@ export default async (req, res) => {
   }
 }
 
+// var escapeShell = function (arg) {
+//   return `'${arg.replace(/'/g, `'\\''`)}'`;
+// };
+
 // original image -> crop
 const cropImage = async (inPath, outPath) => {
   const cropCoordinate = await gmUtil.crop(inPath, outPath);
@@ -81,6 +88,6 @@ const cropImage = async (inPath, outPath) => {
 }
 
 // cropImage to original
-const mergeImage = async (cropCoordinate, inPath, outPath) => {
-  await gmUtil.merge(cropCoordinate.cropX, cropCoordinate.cropY, outPath, inPath, outPath);
+const mergeImage = async (cropCoordinate, toPastePath, inPath, outPath) => {
+  await gmUtil.merge(cropCoordinate.cropX, cropCoordinate.cropY, toPastePath, inPath, outPath);
 }

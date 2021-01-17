@@ -15,6 +15,9 @@ const UploadComponent = () => {
 
     body.append('file', selectedFile, selectedFile.name);
 
+    //JSON obj
+    body.append('stampData', JSON.stringify({ "id": 'idddd', "name": 'nameee' }));
+
     console.log(selectedFile);
     const res = await fetch("http://localhost:3000/api/encodeImage", {
       method: "POST",
