@@ -41,7 +41,7 @@ const FormComponent = () => {
 
     axios({
       method: "post",
-      url: "/api/incidents/upload",
+      url: "/api/encodeImage",
       data: form,
       headers: { "Content-Type": "multipart/form-data" },
     })
