@@ -1,6 +1,6 @@
 # Steganographia
 
-an invisible digital watermark using Stegastamp
+An invisible digital watermark service using [Stegastamp](https://github.com/tancik/StegaStamp)
 
 ## How to use
 
@@ -8,9 +8,6 @@ an invisible digital watermark using Stegastamp
 
 ```bash
 yarn install
-
-# then
-yarn dev
 ```
 
 2. Download the pretrained model from Stegastamp
@@ -27,18 +24,26 @@ rm detector_models.tar.xz
 
 3. Move `saved_models' and 'detector_models' folder into the public folder
 
-4. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+4. Setup Python environment (python 3.3-3.7)
+```
+pip install -r requirements.txt
+pip install tensorflow=1.13.1 
+```
 
-5. Cockroachdb setup
+6. Cockroachdb setup
 - Create ```certs``` folder under ```src```, put ```doot-hack-ca.crt``` under this folder.
 - Create ```config``` folder under ```src```, put ```dbConfig.tsx``` under this folder.
 - Make sure your local/server IP is registered under Networking, Authorized Networks.
+
+5. Run `yarn dev`, then open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+## Demo
  
-## Recommended extensions for VSCode
+Encoding data to an image:
 
-If you're a beginner and don't know which extensions you need, definitely install these:
+<img src="/encodingDemo.gif" width="300" />
 
-1. [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint): Adds error highlighting to VSCode.
-2. [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode): Auto-fixes formatting errors everytime you hit save.
-3. [TailwindCSS Intellisense](https://marketplace.visualstudio.com/items?itemName=bradlc.vscode-tailwindcss): Tailwind className suggestions as you type
-4. [Headwind](https://marketplace.visualstudio.com/items?itemName=heybourn.headwind): Makes sure your tailwind classes have the correct order which makes components easier to read.
+Retrieving watermark data from the image:
+
+<img src="/verificationDemo.gif" width="300" />
+
