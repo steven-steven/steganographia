@@ -41,3 +41,8 @@ public/model/out/
 public/temp/
 
 public/saved_models
+public/detector_models
+
+#db secrets
+/src/config/*
+/src/certs/*
