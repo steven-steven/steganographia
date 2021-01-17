@@ -1,6 +1,6 @@
 const pg = require('pg');
 const CONFIG = require('../config/dbConfig.tsx');
-// Create a pool.
+
 const pool = new pg.Pool(CONFIG);
 
 module.exports = {
