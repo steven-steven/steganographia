@@ -10,14 +10,29 @@ import XHRUpload from "@uppy/xhr-upload";
  * Credits go to https://maxcode.online/nextjs-file-upload-with-uppy-and-multer-using-api-routes/
  */
 const UploadComponent = ({ handleUpload, fileData }) => {
-  const handleFileSubmit = () => {
-    const formData = new FormData();
+  const handleFileSubmit = (e) => {
+    e.preventDefault();
+    let formData = new FormData();
 
     console.log("Form Data");
     console.log(fileData);
 
+    formData.append("name", "Steven Xiong");
+    formData.append("email", "steven.x@waterloop.ca");
     formData.append("uploadedImage", fileData);
-    axios.post("api/incidents/upload", formData);
+
+    axios({
+      method: "post",
+      url: "/api/incidents/upload",
+      data: formData,
+      headers: { "Content-Type": "multipart/form-data" },
+    })
+      .then(function (response) {
+        console.log(response.status);
+      })
+      .catch(function (response) {
+        console.log(response.status);
+      });
   };
 
   return (
