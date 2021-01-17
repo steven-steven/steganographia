@@ -1,6 +1,4 @@
 import React, { useState } from "react";
-import FileSaver from 'file-saver';
-import axios from "axios";
 import UploadComponent from "../atoms/uploadComponent";
 import { ImSpinner } from 'react-icons/im';
 
@@ -33,6 +31,7 @@ const FormComponent = () => {
 
   const handleUpload = (file) => {
     setFormData({ ...formData, uploadedImage: file });
+    setFetchSuccess(false);
   };
 
   const handleSubmit = async (e) => {

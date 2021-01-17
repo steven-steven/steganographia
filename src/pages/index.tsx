@@ -28,11 +28,11 @@ export default function Home() {
             Please specify your name and upload an image to claim ownership over
             it.
           </h4>
-          <div className="flex flex-col justify-around w-full lg:flex-row">
-            <div className='flex-1 max-w-2xl p-10 mb-3 border'>
+          <div className="flex flex-col justify-around w-full mx-auto lg:flex-row">
+            <div className='flex-1 max-w-2xl p-10 mx-auto mb-3 border'>
               <FormComponent />
             </div>
-            <div className='flex-1 max-w-2xl p-10 mb-3 border'>
+            <div className='flex-1 max-w-2xl p-10 mx-auto mb-3 border'>
               <VerificationForm />
             </div>
           </div>

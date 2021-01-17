@@ -1,14 +1,18 @@
 import React, { useState } from "react";
 import FileSaver from 'file-saver';
-import axios from "axios";
+import { ImSpinner } from 'react-icons/im';
 import UploadComponent from "../atoms/uploadComponent";
 
+const initialFormData = {
+  name: "",
+  message: "",
+  uploadedImage: null,
+};
+
 const FormComponent = () => {
-  const [formData, setFormData] = useState({
-    name: "",
-    message: "",
-    uploadedImage: null,
-  });
+  const [formData, setFormData] = useState(initialFormData);
+  const [fetchSuccess, setFetchSuccess] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const hasNoErrors = () => {
     if (!formData.name) {
@@ -28,6 +32,7 @@ const FormComponent = () => {
 
   const handleUpload = (file) => {
     setFormData({ ...formData, uploadedImage: file });
+    setFetchSuccess(false);
   };
 
   const handleSubmit = async (e) => {
@@ -40,15 +45,19 @@ const FormComponent = () => {
     //JSON obj
     form.append('stampData', JSON.stringify({ "name": formData.name, "message": formData.message }));
 
+    setIsLoading(true);
     const res = await fetch("/api/encodeImage", {
       method: "POST",
       body: form
     });
-
     const blob = await res.blob();
+    setIsLoading(false);
 
-    // const blob = await res.blob();
     FileSaver.saveAs(blob, formData.uploadedImage.name);
+
+    // success and clear form
+    setFetchSuccess(true);
+    setFormData(initialFormData);
   };
 
   return (
@@ -92,19 +101,28 @@ const FormComponent = () => {
         </div>
       </div>
 
-      <div className="flex justify-between mt-6">
-        <UploadComponent
-          handleUpload={(e) => handleUpload(e.target.files[0])}
-        />
-        <div>
-          <input
-            type="submit"
-            value="Submit"
-            className="px-4 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700"
-            onClick={handleSubmit}
-          />
-        </div>
-      </div>
+      {isLoading ? (<ImSpinner className='mx-auto mt-8 text-4xl animate-spin' />) :
+        (
+          <div className="flex justify-between mt-6">
+            <UploadComponent
+              handleUpload={(e) => handleUpload(e.target.files[0])}
+            />
+            <div>
+              <input
+                type="submit"
+                value="Submit"
+                className="px-4 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700"
+                onClick={handleSubmit}
+              />
+            </div>
+          </div>
+        )
+      }
+      {fetchSuccess && (<div className="pt-8 mt-8 border-t-4">
+        <p className="text-xl font-medium leading-6 text-green-700">
+          Sucessfully stamped :)
+        </p>
+      </div>)}
     </form>
   );
 };
